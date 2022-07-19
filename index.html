@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #bottomButton{
+      transform: translateY(100%);
+    }
+  </style>
+</head>
+<body id="body" style="height: 100vh; overflow: scroll;">
+  <div style="display: flex; flex-direction:row; gap:10px; padding: 30px 0; justify-content: center">
+    <a href="populate-all-articles.html">All Articles</a>
+    <a href="populate-articles-category.html">Articles in Category</a>
+  </div>
+  <div style="height: 2000px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;" id="main">
+    <button style="padding: 12px 14px; border-radius: 5px; border: 1px solid black; cursor:pointer" id="myButton">Test</button>
+    <div style="height: 100px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: fixed; bottom: 0; background-color: aliceblue;" id="bottomButton">
+      <button>Another Test</button>
+    </div>
+  </div>
+  <script>
+  function getArticlesList(){
+    var id = '18YYDm8_0uR4qwS9SB7mFlsAPoSyZxR-S7m5-N4yge8g';
+    var gid = '0';
+    var url = 'https://docs.google.com/spreadsheets/d/'+id+'/gviz/tq?tqx=out:json&tq&gid='+gid;
+    fetch(url)
+      .then(response => response.text())
+      .then(data => processArticles(data.slice(47, -2)));
+  }
+  function processArticles(jsonString){
+    var json = JSON.parse(jsonString);
+    var rows = json.table.rows
+    var cols = json.table.cols
+    var articles = {}
+    
+    var labels = []
+    cols.forEach((label,index) => {
+      labels.push(label.label)
+    });
+    // console.log(labels);
+
+    rows.reverse().forEach((row,index) => {
+        var data = row.c
+        var language = ""
+        var category = ""
+        
+        var article = {}
+        labels.forEach((keyName,index) => {
+          keyName = keyName.toLowerCase().replaceAll(" ","_")
+          // console.log(keyName);
+          //format date if label == Date Publish
+          if (keyName == "date_publish") {
+            const month = [
+              "January","February","March","April",
+              "May","June","July","August","September",
+              "October","November","December"
+            ]
+            const date = data[index].v.slice(
+              data[index].v.indexOf("(") + 1,
+              data[index].v.lastIndexOf(")"),
+            ).split(',')
+
+            const formattedDate = `${date[2]} ${month[date[1]]} ${date[0]}`
+            // assign formatted date to Date Publish key
+            article[keyName] = formattedDate
+          }else{
+            // assign value to key
+            article[keyName] = data[index].v
+          }
+          
+          // get name for language object and category array
+          if (keyName == "language") {
+            language = data[index].v
+          }
+          if (keyName == "category") {
+            category = data[index].v.replaceAll(" ","-")
+          }
+        });
+
+        // check language object existed or not
+        var isLanguageExist = language in articles
+        if (!isLanguageExist) {
+          // create language object
+          articles[language] = {}
+        }
+
+        // check category array existed or not
+        var isCategoryExist = category in articles[language]
+        if (!isCategoryExist) {
+          // create category array and push article into category
+          articles[language][category] = []
+          articles[language][category].push(article)
+        }else{
+          // push article into category
+          articles[language][category].push(article)
+        }
+    });
+    const articlesStr = JSON.stringify(articles)
+    localStorage.setItem("published_articles", articlesStr);
+  }
+  getArticlesList()
+  </script>
+
+  <script>
+    document.addEventListener("scroll", function () { // or 
+      const element = document.querySelector("#myButton");
+      const rect = element.getBoundingClientRect();
+      // console.log(rect.top.toFixed())
+      if (rect.top.toFixed() < 0) {
+        document.querySelector("#bottomButton").style.transform = 'translateY(0)';
+      }else{
+        document.querySelector("#bottomButton").style.transform = 'translateY(100%)';
+      }
+    }, false);
+  </script>
+  <script>
+  fetch("./test.xml")
+  .then(response => response.text())
+  .then(data => {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data, "application/xml");
+    getPage(xml,"harga", "MY");
+  })
+  .catch(console.error);
+
+  function getPage(xml, typedPage, location){
+    console.log("Requested URL: https://yezza.com/"+typedPage, location);
+    var locs = xml.querySelectorAll("loc")
+    const rel_page = []
+    locs.forEach(loc => {
+      const url = loc.innerHTML
+      const urlArr = url.split("/")
+      const page = urlArr.slice(-1)[0]
+      const lang = urlArr[3]
+      if (typedPage === page) {
+        rel_page.push({lang: lang, page: page, url: url})
+      }
+    });
+    if (rel_page.length > 1) {
+      rel_page.forEach(path => {
+        if (location.toLowerCase() === path.lang) {
+          // window.location.replace(path.url);
+          console.log("Go to "+ path.url);
+        }
+      });
+    }
+    if(rel_page.length > 0 && rel_page.length === 1){
+      // window.location.replace(rel_page[0].url);
+      console.log("Go to "+ rel_page[0].url);
+    }
+  }
+  </script>
+</body>
+</html>

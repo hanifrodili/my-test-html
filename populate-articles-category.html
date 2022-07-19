@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body{
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+    a{
+      text-decoration: none;
+    }
+    .w-layout-grid {
+      display: -ms-grid;
+      display: grid;
+      grid-auto-columns: 1fr;
+      -ms-grid-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
+      -ms-grid-rows: auto auto;
+      grid-template-rows: auto auto;
+      grid-row-gap: 16px;
+      grid-column-gap: 16px;
+    }
+   .articles-list {
+      grid-auto-flow: row;
+      grid-template-areas: ".";
+      -ms-grid-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
+      -ms-grid-rows: auto;
+      grid-template-rows: auto;
+    }
+    #article-card{
+      -webkit-text-size-adjust: 100%;
+      font-family: Inter,sans-serif;
+      font-size: 16px;
+      line-height: 18px;
+      box-sizing: border-box;
+      -webkit-user-drag: none;
+      background-color: transparent;
+      max-width: 100%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      width: 100%;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      flex-direction: column;
+      border-radius: 0;
+      color: #161b22;
+    text-decoration: none;
+    }
+    .image-wrapper-4-3{
+      -webkit-text-size-adjust: 100%;
+      font-family: Inter,sans-serif;
+      font-size: 16px;
+      line-height: 18px;
+      -webkit-box-direction: normal;
+      color: #161b22;
+      box-sizing: border-box;
+      -webkit-user-drag: none;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      padding-top: 75%;
+    }
+    .article-thumbnail {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      -webkit-filter: none;
+      filter: none;
+      -o-object-fit: cover;
+      object-fit: cover;
+    }
+    .post-thumb-simple-info {
+      box-sizing: border-box;
+      position: relative;
+      z-index: 10;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      width: 100%;
+      padding: 1.5em;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      -webkit-box-pack: justify;
+      -webkit-justify-content: space-between;
+      -ms-flex-pack: justify;
+      justify-content: space-between;
+      -webkit-box-align: start;
+      -webkit-align-items: flex-start;
+      -ms-flex-align: start;
+      align-items: flex-start;
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
+      -ms-flex: 1;
+      flex: 1;
+      background-color: transparent;
+    }
+    .font-title-3 {
+      position: relative;
+      font-family: 'Inter Display',sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 0;
+    }
+    .text-xs.uppercase {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #5c5c5c;
+    }
+    .text-xs.font-weight-medium {
+      color: #6b7280;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .article-card{
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div style="max-width: 800px; margin: auto; padding: 50px 20px;" id="articles-main">
+    <div class="w-layout-grid articles-list">
+      <a href="" class="flex-vertical rounded-xs zoom-in w-inline-block article-card">
+        <div class="image-wrapper-4-3">
+          <img loading="lazy" src="https://assets.website-files.com/6254f60dbd5221cae6934d70/625d19a85c528e2429a9c808_Rectangle-38.jpg" alt="Featured Image" class="article-thumbnail">
+        </div>
+        <div class="post-thumb-simple-info">
+          <div>
+            <h6 class="font-title-3 article-title">Article Title</h6>
+          </div>
+          <div class="opacity-30-copy-2">
+            <div class="text-xs uppercase article-published-date">22 APRIL 2022</div>
+          </div>
+          <div class="text-xs font-weight-medium article-author-name">Author Name</div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <script>
+    const lang = 'en'
+    const categoryName = 'online retail'
+    var path = window.location.pathname
+    //===================================================//
+    setTimeout(() => {
+      appendCategoryArticles()
+    }, 500);
+    function appendCategoryArticles(){
+      const articles = JSON.parse(localStorage.getItem("published_articles"))
+
+      //get template elements
+      const cardParent = document.querySelector(".articles-list")
+      const articleCard = document.querySelector(".article-card")
+
+      if (articles[lang][categoryName]) {
+        articles[lang][categoryName].forEach(article => {
+          //clone card template
+          const cloneCard = articleCard.cloneNode(true);
+
+          cloneCard.setAttribute("href",`${path}/${article.slug}`)
+
+          const thumbnail = cloneCard.querySelector(".article-thumbnail")
+          const authorName = cloneCard.querySelector(".article-author-name")
+          const title = cloneCard.querySelector(".article-title")
+          const publishedDate = cloneCard.querySelector(".article-published-date")
+
+          // set article featured image link
+          thumbnail.removeAttribute('srcset')
+          thumbnail.setAttribute('src',article.featured_image_link)
+
+          // set article author name
+          authorName.innerText = article.author
+
+          //set article title
+          title.innerText = article.title
+
+          // set article published date
+          publishedDate.innerText = article.date_publish.toUpperCase()
+          
+          // append new article card
+          cloneCard.style.display = "block"
+          cardParent.appendChild(cloneCard);
+        });
+      }
+      cardParent.children[0].remove()
+    }
+    
+  </script>
+</body>
+</html>
